@@ -28,25 +28,56 @@ export function exportAsPng(canvas, fileName = "PNG FileName", options = {}) {
       ...options,
     };
 
+    // Store original background color
+    const originalBgColor = canvas.backgroundColor;
+    
+    // If includeBackground is false, temporarily set transparent background
+    if (options.includeBackground === false) {
+      canvas.backgroundColor = null;
+    }
+
     const dataURL = canvas.toDataURL(defaultOptions);
 
+    // Restore original background
+    if (options.includeBackground === false) {
+      canvas.backgroundColor = originalBgColor;
+      canvas.renderAll();
+    }
+
     saveAs(dataURL, `${fileName}.png`);
+    return true;
   } catch (e) {
+    console.error("PNG export error:", e);
     return false;
   }
 }
 
-export function exportAsSVG(canvas, fileName = "SVG Design") {
+export function exportAsSVG(canvas, fileName = "SVG Design", options = {}) {
   if (!canvas) return;
 
   try {
+    // Store original background color
+    const originalBgColor = canvas.backgroundColor;
+    
+    // If includeBackground is false, temporarily set transparent background
+    if (options.includeBackground === false) {
+      canvas.backgroundColor = null;
+    }
+
     const svgData = canvas.toSVG();
+
+    // Restore original background
+    if (options.includeBackground === false) {
+      canvas.backgroundColor = originalBgColor;
+      canvas.renderAll();
+    }
 
     const blob = new Blob([svgData], { type: "image/svg+xml" });
     saveAs(blob, `${fileName}.svg`);
 
     return true;
   } catch (e) {
+    console.error("SVG export error:", e);
     return false;
   }
 }
@@ -80,7 +111,21 @@ export function exportAsPDF(canvas, fileName = "PDF Design", options = {}) {
     const x = (pdfWidth - canvasWidth * scale) / 2;
     const y = (pdfHeight - canvasHeight * scale) / 2;
 
+    // Store original background color
+    const originalBgColor = canvas.backgroundColor;
+    
+    // If includeBackground is false, temporarily set transparent background
+    if (options.includeBackground === false) {
+      canvas.backgroundColor = null;
+    }
+
     const imgData = canvas.toDataURL("image/png", 1.0);
+
+    // Restore original background
+    if (options.includeBackground === false) {
+      canvas.backgroundColor = originalBgColor;
+      canvas.renderAll();
+    }
 
     pdf.addImage(
       imgData,
@@ -95,6 +140,7 @@ export function exportAsPDF(canvas, fileName = "PDF Design", options = {}) {
 
     return true;
   } catch (e) {
+    console.error("PDF export error:", e);
     return false;
   }
 }

@@ -19,6 +19,7 @@ import {
 import { useEditorStore } from "@/store";
 import { isPremiumUser } from "@/lib/premium-utils";
 import SubscriptionModal from "@/components/subscription/premium-modal";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Download,
   File,
@@ -38,6 +39,7 @@ function ExportModal({ isOpen, onClose }) {
   const [selectedFormat, setSelectedFormat] = useState("png");
   const [isExporting, setIsExporting] = useState(false);
   const [showUpgradeModal, setShowUpgradeModal] = useState(false);
+  const [includeBackground, setIncludeBackground] = useState(true);
 
   const isUserPremium = isPremiumUser(userSubscription);
 
@@ -95,15 +97,15 @@ function ExportModal({ isOpen, onClose }) {
           break;
 
         case "png":
-          successFlag = exportAsPng(canvas, "PNG FileName");
+          successFlag = exportAsPng(canvas, "PNG FileName", { includeBackground });
           break;
 
         case "svg":
-          successFlag = exportAsSVG(canvas, "SVG FileName");
+          successFlag = exportAsSVG(canvas, "SVG FileName", { includeBackground });
           break;
 
         case "pdf":
-          successFlag = exportAsPDF(canvas, "PDF FileName");
+          successFlag = exportAsPDF(canvas, "PDF FileName", { includeBackground });
           break;
 
         default:
@@ -212,6 +214,22 @@ function ExportModal({ isOpen, onClose }) {
                   </Card>
                 );
               })}
+            </div>
+
+            <div className="mt-4 px-1">
+              <div className="flex items-center space-x-2 p-3 bg-gray-50 rounded-lg border border-gray-200">
+                <Checkbox
+                  id="include-background"
+                  checked={includeBackground}
+                  onCheckedChange={setIncludeBackground}
+                />
+                <label
+                  htmlFor="include-background"
+                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                >
+                  Include canvas background
+                </label>
+              </div>
             </div>
 
             {!isUserPremium && (

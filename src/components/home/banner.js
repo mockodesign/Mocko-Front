@@ -107,7 +107,7 @@ function Banner() {
           </span>
         </p> */}
 
-        <Button
+        {/* <Button
           onClick={handleCreateNewDesign}
           disabled={loading}
           className="bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-600 hover:to-indigo-700 text-white font-semibold px-8 py-4 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 disabled:opacity-75 disabled:hover:scale-100 text-lg"
@@ -120,7 +120,7 @@ function Banner() {
           ) : (
             "Start Creating Now"
           )}
-        </Button>
+        </Button> */}
       </div>
       
       {/* Upgrade Modal */}
