@@ -45,8 +45,9 @@ export async function GET() {
         // All canzat items are premium
         const isPremium = true;
 
-        // Use the image itself as thumbnail
-        const thumbnail = `/canzat/images/${fileName}`;
+        // Use the image itself as thumbnail - encode the filename for URL safety
+        const encodedFileName = encodeURIComponent(fileName);
+        const thumbnail = `/canzat/images/${encodedFileName}`;
 
         // Create canzat object
         const canzatItem = {
@@ -61,7 +62,7 @@ export async function GET() {
           isPremium,
           lastModified: stats.mtime.toISOString(),
           type: 'canzat', // Mark as canzat type
-          imagePath: `/canzat/images/${fileName}` // Path to the actual image
+          imagePath: `/canzat/images/${encodedFileName}` // Path to the actual image with encoded filename
         };
 
         canzatItems.push(canzatItem);

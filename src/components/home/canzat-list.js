@@ -71,10 +71,18 @@ function CanzatList({
         img.onload = () => {
           resolve({ width: img.naturalWidth, height: img.naturalHeight });
         };
-        img.onerror = () => {
-          reject(new Error("Failed to load image"));
+        img.onerror = (err) => {
+          console.error(`Failed to load image from ${canzatItem.imagePath}:`, err);
+          reject(new Error(`Failed to load image from ${canzatItem.imagePath}. The image may not exist or is inaccessible.`));
         };
-        img.src = canzatItem.imagePath;
+        
+        // Construct the full URL for the image
+        const imageUrl = canzatItem.imagePath.startsWith('http') 
+          ? canzatItem.imagePath 
+          : `${window.location.origin}${canzatItem.imagePath}`;
+        
+        console.log(`Loading image from: ${imageUrl}`);
+        img.src = imageUrl;
       });
 
       const { width: imageWidth, height: imageHeight } = await imageLoadPromise;

@@ -169,9 +169,31 @@ class Logger {
 
     // Track unhandled promise rejections
     window.addEventListener('unhandledrejection', (event) => {
-      this.error(CATEGORIES.ERROR, 'Unhandled promise rejection', {
-        reason: event.reason,
-      }, event.reason instanceof Error ? event.reason : new Error(event.reason));
+      // Prevent default handling to avoid duplicate logging
+      event.preventDefault();
+      
+      const reason = event.reason;
+      let errorObj = null;
+      let errorData = {};
+      
+      if (reason instanceof Error) {
+        errorObj = reason;
+        errorData = {
+          message: reason.message,
+          stack: reason.stack,
+        };
+      } else if (typeof reason === 'string') {
+        errorObj = new Error(reason);
+        errorData = { reason };
+      } else if (reason && typeof reason === 'object') {
+        errorData = { reason: JSON.stringify(reason) };
+        errorObj = new Error('Promise rejection with object');
+      } else {
+        errorData = { reason: String(reason) };
+        errorObj = new Error('Promise rejection');
+      }
+      
+      this.error(CATEGORIES.ERROR, 'Unhandled promise rejection', errorData, errorObj);
     });
   }
 
