@@ -172,59 +172,78 @@ function TemplatePreview({
               fabricCanvasRef.current.backgroundColor = "#ffffff";
             }
 
-            // Load template objects
-            fabricCanvasRef.current.loadFromJSON(templateData, () => {
-              if (!isMounted) return;
+            // Load template objects with proper image handling
+            fabricCanvasRef.current.loadFromJSON(
+              templateData,
+              () => {
+                if (!isMounted) return;
 
-              try {
-                // Calculate scale to fit entire design
-                const scale = Math.min(
-                  previewWidth / width,
-                  previewHeight / height
-                );
+                try {
+                  // Calculate scale to fit entire design
+                  const scale = Math.min(
+                    previewWidth / width,
+                    previewHeight / height
+                  );
 
-                console.log(
-                  `Template: ${templateFile}, Original: ${width}x${height}, Preview: ${previewWidth}x${previewHeight}, Scale: ${scale}`
-                );
+                  console.log(
+                    `Template: ${templateFile}, Original: ${width}x${height}, Preview: ${previewWidth}x${previewHeight}, Scale: ${scale}`
+                  );
 
-                // Set the canvas viewport to show the entire original design scaled down
-                const zoom = scale;
-                fabricCanvasRef.current.setZoom(zoom);
+                  // Set the canvas viewport to show the entire original design scaled down
+                  const zoom = scale;
+                  fabricCanvasRef.current.setZoom(zoom);
 
-                // Set viewport transform to center the content
-                const scaledWidth = width * scale;
-                const scaledHeight = height * scale;
-                const offsetX = (previewWidth - scaledWidth) / 2;
-                const offsetY = (previewHeight - scaledHeight) / 2;
+                  // Set viewport transform to center the content
+                  const scaledWidth = width * scale;
+                  const scaledHeight = height * scale;
+                  const offsetX = (previewWidth - scaledWidth) / 2;
+                  const offsetY = (previewHeight - scaledHeight) / 2;
 
-                fabricCanvasRef.current.setViewportTransform([
-                  zoom,
-                  0,
-                  0,
-                  zoom,
-                  offsetX,
-                  offsetY,
-                ]);
+                  fabricCanvasRef.current.setViewportTransform([
+                    zoom,
+                    0,
+                    0,
+                    zoom,
+                    offsetX,
+                    offsetY,
+                  ]);
 
-                if (isMounted) {
-                  fabricCanvasRef.current.requestRenderAll();
-                  setIsLoading(false);
+                  if (isMounted) {
+                    fabricCanvasRef.current.requestRenderAll();
+                    setIsLoading(false);
+                  }
+
+                  console.log(
+                    `Template ${templateFile} loaded with zoom: ${zoom}`
+                  );
+                } catch (error) {
+                  console.error(
+                    `Error rendering template ${templateFile}:`,
+                    error
+                  );
+                  if (isMounted) {
+                    setHasError(true);
+                    setIsLoading(false);
+                  }
                 }
-
-                console.log(
-                  `Template ${templateFile} loaded with zoom: ${zoom}`
-                );
-              } catch (error) {
-                console.error(
-                  `Error rendering template ${templateFile}:`,
-                  error
-                );
-                if (isMounted) {
-                  setHasError(true);
-                  setIsLoading(false);
+              },
+              (o, object) => {
+                // This callback is called for each object after it's revived
+                // Handle image loading errors
+                if (object.type === 'image') {
+                  // Set crossOrigin for CORS support
+                  if (object._element) {
+                    object._element.crossOrigin = 'anonymous';
+                  }
+                  
+                  // Handle image load errors
+                  object.on('error', (e) => {
+                    console.warn(`Failed to load image in template ${templateFile}:`, e);
+                    // Don't fail the entire template, just skip this image
+                  });
                 }
               }
-            });
+            );
           } catch (error) {
             console.error("Error loading template:", error);
             if (isMounted) {

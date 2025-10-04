@@ -134,38 +134,70 @@ function DesignPreview({ design }) {
           designPreviewCanvas.backgroundColor = canvasData.background;
         }
 
-        // Load design objects with proper scaling
-        designPreviewCanvas.loadFromJSON(canvasData, () => {
-          if (!isMounted) return;
-          
-          try {
-            // Calculate scale to fit entire design
-            const scale = Math.min(previewWidth / designWidth, previewHeight / designHeight);
+        // Load design objects with proper scaling and image handling
+        designPreviewCanvas.loadFromJSON(
+          canvasData,
+          () => {
+            if (!isMounted) return;
 
-            // Use zoom and viewport transform for proper scaling
-            const zoom = scale;
-            designPreviewCanvas.setZoom(zoom);
-            
-            // Center the content
-            const scaledWidth = designWidth * scale;
-            const scaledHeight = designHeight * scale;
-            const offsetX = (previewWidth - scaledWidth) / 2;
-            const offsetY = (previewHeight - scaledHeight) / 2;
-            
-            designPreviewCanvas.setViewportTransform([zoom, 0, 0, zoom, offsetX, offsetY]);
-            
-            if (isMounted) {
-              designPreviewCanvas.requestRenderAll();
-              setIsLoading(false);
+            try {
+              // Calculate scale to fit entire design
+              const scale = Math.min(
+                previewWidth / designWidth,
+                previewHeight / designHeight
+              );
+
+              // Use zoom and viewport transform for proper scaling
+              const zoom = scale;
+              designPreviewCanvas.setZoom(zoom);
+
+              // Center the content
+              const scaledWidth = designWidth * scale;
+              const scaledHeight = designHeight * scale;
+              const offsetX = (previewWidth - scaledWidth) / 2;
+              const offsetY = (previewHeight - scaledHeight) / 2;
+
+              designPreviewCanvas.setViewportTransform([
+                zoom,
+                0,
+                0,
+                zoom,
+                offsetX,
+                offsetY,
+              ]);
+
+              if (isMounted) {
+                designPreviewCanvas.requestRenderAll();
+                setIsLoading(false);
+              }
+            } catch (error) {
+              console.error(`Error rendering design ${design._id}:`, error);
+              if (isMounted) {
+                setHasError(true);
+                setIsLoading(false);
+              }
             }
-          } catch (error) {
-            console.error(`Error rendering design ${design._id}:`, error);
-            if (isMounted) {
-              setHasError(true);
-              setIsLoading(false);
+          },
+          (o, object) => {
+            // This callback is called for each object after it's revived
+            // Handle image loading for proper display
+            if (object.type === "image") {
+              // Set crossOrigin for CORS support
+              if (object._element) {
+                object._element.crossOrigin = "anonymous";
+              }
+
+              // Handle image load errors gracefully
+              object.on("error", (e) => {
+                console.warn(
+                  `Failed to load image in design ${design._id}:`,
+                  e
+                );
+                // Don't fail the entire preview, just skip this image
+              });
             }
           }
-        });
+        );
       } catch (e) {
         console.error("Error rendering design preview:", e);
         if (isMounted) {
