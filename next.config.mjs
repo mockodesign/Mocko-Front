@@ -7,9 +7,13 @@ const nextConfig = {
   images: {
     domains: ["res.cloudinary.com", "cloudinary.com"],
     formats: ["image/webp", "image/avif"],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 3600, // Cache for 1 hour (improved from 60s)
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
+    imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     dangerouslyAllowSVG: true,
     contentSecurityPolicy: "default-src 'self'; script-src 'none'; sandbox;",
+    // Add compression
+    unoptimized: false,
   },
 
   // Security headers
